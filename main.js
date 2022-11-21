@@ -2,6 +2,8 @@
 
 const canvas = document.querySelector("canvas");
 const ctx = canvas.getContext("2d");
+const counter = document.querySelector(".counter");
+let score = 0;
 
 const width = (canvas.width = window.innerWidth);
 const height = (canvas.height = window.innerHeight);
@@ -82,6 +84,7 @@ class Ball extends Shape {
 }
 
 class EvilCircle extends Shape {
+
   constructor(x, y) {
     super(x, y, 20, 20);
     this.color = "white";
@@ -104,6 +107,50 @@ class EvilCircle extends Shape {
       }
     });
   }
+
+  draw() {
+    ctx.beginPath();
+    ctx.strokeStyle = "white";
+    ctx.lineWidth = 3;
+    ctx.arc(this.x, this.y, this.size, 0, 2 * Math.PI);
+    ctx.stroke();
+  }
+
+  checkBounds() {
+    
+      if (this.x + this.size >= width) {
+        this.x = this.x-this.size;
+      }
+  
+      if (this.x - this.size <= 0) {
+        this.x = this.x+this.size;
+      }
+  
+      if (this.y + this.size >= height) {
+        this.y = this.y+this.size;
+      }
+  
+      if (this.y - this.size <= 0) {
+        this.y = this.y-this.size;
+      }
+  
+    
+  }
+
+  collisionDetect() {
+    for (const ball of balls) {
+      if (ball.exists) {
+        const dx = this.x - ball.x;
+        const dy = this.y - ball.y;
+        const distance = Math.sqrt(dx * dx + dy * dy);
+
+        if (distance < this.size + ball.size) {
+         score -= 1;
+          ball.exists = false;
+        }
+      }
+    }
+  }
 }
 
 const balls = [];
@@ -122,16 +169,29 @@ while (balls.length < 25) {
   );
 
   balls.push(ball);
+  score += 1;
+  //counter.textContent = counter.textContent `${score}`;
 }
+
+const evilCircle = new EvilCircle (50,50);
+
+//counter.textContent += score;
 
 function loop() {
   ctx.fillStyle = "rgba(0, 0, 0, 0.2)";
   ctx.fillRect(0, 0, width, height);
-
+  
   for (const ball of balls) {
+    if (ball.exists) {
     ball.draw();
     ball.update();
     ball.collisionDetect();
+    }
+
+    evilCircle.draw();
+    evilCircle.checkBounds();
+    evilCircle.collisionDetect();
+ //   counter.textContent = score;
   }
 
   requestAnimationFrame(loop);
